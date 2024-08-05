@@ -1,203 +1,136 @@
-<!doctype html>
-<html>
-
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>WeBAD Demo</title>
-  <link rel="shortcut icon" href="#">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Custom Alert Example</title>
   <style>
     body {
-      font-size: 18px;
-      font-family: 'courier';
-      /*"Lucida Console", Courier, monospace;*/
-      background-color: black;
-      color: white;
+        font-size: 18px;
+        font-family: 'Courier New', Courier, monospace;
+        background-color: rgb(255, 255, 255);
+        color: rgb(7, 7, 7);
     }
-
+    
     button {
-      font-size: 18px;
-      font-family: 'courier';
-      color: white;
-      background-color: white
-        /*#4CAF50;  Green */
+        font-size: 18px;
+        font-family: 'Courier New', Courier, monospace;
+        color: black;
+        background-color: white;
         border: none;
-      color: black;
-      padding: 15px 32px;
-      text-align: center;
-      text-decoration: none;
-      display: inline-block;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
     }
-
+    
     #start {
-      background-color: green
+        background-color: green;
+        color: white;
     }
-
+    
     #startconsoledebug {
-      background-color: yellow
+        background-color: yellow;
+        color: black;
     }
-
+    
     #stopconsoledebug {
-      background-color: orange
+        background-color: orange;
+        color: black;
     }
-
+    
     #microphonestatus,
     #audiostatus,
     #recording {
-      font-size: 36px;
-      font-family: 'courier';
-      background-color: black;
-      color: white;
+        font-size: 36px;
+        font-family: 'Courier New', Courier, monospace;
+        background-color: black;
+        color: white;
+        padding: 10px;
+        text-align: center;
     }
-
+    
     td,
     th {
-      border: 1px solid;
-      text-align: left;
-      padding: 10px;
+        border: 1px solid;
+        text-align: left;
+        padding: 10px;
     }
+    
+    #customAlert {
+        display: none;
+        position: fixed;
+        top: 20%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #333;
+        color: #fff;
+        padding: 15px;
+        border-radius: 5px;
+        z-index: 1000;
+    }
+    
   </style>
-</head>
+  <script>
+    function blurt(message) {
+      const alertBox = document.getElementById('customAlert');
+      alertBox.textContent = message;
+      alertBox.style.display = 'block';
+      setTimeout(() => {
+        alertBox.style.display = 'none';
+      }, 3000); // 3秒後自動隱藏
+    }
 
-<body>
-  <h1>WeBAD Demo</h1>
-  <h2>Web Browser Audio Detection/Speech Recording Events API</h2>
-  <div>
-    This sample shows how to implement an audio/speech detection in the browser, using a ScriptProcessor (Web Audio
-    API).<br>
-    Github repo: <a href="https://github.com/solyarisoftware/webad">https://github.com/solyarisoftware/webad</a><br>
-    <br>
-    To open/close the console: CTRL-SHIFT-J on Chrome, or CTRL-SHIFT-K on Firefox.
-    <h1 id="transcript">SpeechRecognition:</h1>
-  </div>
-  <br>
-  <button id="start">START (required on Chrome)</button>
-  <button id="startconsoledebug">enable console logs</button>
-  <button id="stopconsoledebug">disable console logs</button>
-  <br>
-  <br>
-  <div>
-    REAL-TIME EVENTS/STATUS
-    <table>
-      <tr>
-        <th>Status</th>
-        <th>Value</th>
-      </tr>
-      <tr>
-        <td>microphone</td>
-        <td id="microphonestatuscell"><a id="microphonestatus"></a></td>
-      </tr>
-      <tr>
-        <td>audio</td>
-        <td id="audiostatuscell"><a id="audiostatus"></a></td>
-      </tr>
-      <tr>
-        <td>speech<br>recording</td>
-        <td id="recordingcell"><a id="recording"></a>
-          <p><audio id="audio" controls></audio></p>
-        </td>
-      </tr>
-    </table>
-  </div>
+    document.addEventListener('DOMContentLoaded', () => {
+      const transcriptElement = document.getElementById('transcript');
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-  <br>
+      blurt('Checking SpeechRecognition support: ' + (SpeechRecognition ? 'Supported' : 'Not Supported'));
 
-  <div>
-    CONFIGURATION PARAMETERS
-    <table>
-      <tr>
-        <th>Parameter</th>
-        <th>Value</th>
-      </tr>
-      <tr>
-        <td>SAMPLE_POLLING_MSECS</td>
-        <td><a id="SAMPLE_POLLING_MSECS"></a></td>
-      </tr>
-      <tr>
-        <td>MAX_INTERSPEECH_SILENCE_MSECS</td>
-        <td><a id="MAX_INTERSPEECH_SILENCE_MSECS"></a></td>
-      </tr>
-      <tr>
-        <td>MIN_SIGNAL_DURATION</td>
-        <td><a id="MIN_SIGNAL_DURATION"></a></td>
-      </tr>
-      <tr>
-        <td>VOLUME_SIGNAL</td>
-        <td><a id="VOLUME_SIGNAL"></a></td>
-      </tr>
-      <tr>
-        <td>VOLUME_SILENCE</td>
-        <td><a id="VOLUME_SILENCE"></a></td>
-      </tr>
-      <tr>
-        <td>VOLUME_MUTE</td>
-        <td><a id="VOLUME_MUTE"></a></td>
-      </tr>
-      <tr>
-        <td>MIN_AVERAGE_SIGNAL_VOLUME</td>
-        <td><a id="MIN_AVERAGE_SIGNAL_VOLUME"></a></td>
-      </tr>
-    </table>
-  </div>
+      if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = 'en-us';
 
-  <br>
+        recognition.onresult = event => {
+          blurt('Speech recognition results received!');
+          console.log('Speech recognition results:', event.results);
+          const len = event.results.length;
 
-  <div>
-    EVENTS EMITTED
-    <table>
-      <tr>
-        <th>Event name</th>
-        <th>Category</th>
-        <th>Description</th>
-      </tr>
-      <tr>
-        <td>signal</td>
-        <td>audio sample</td>
-        <td>volume is high, so probably user is speaking</td>
-      </tr>
-      <tr>
-        <td>silence</td>
-        <td>audio sample</td>
-        <td>volume is pretty low, the mic is on but there is not speech</td>
-      </tr>
-      <tr>
-        <td>mute</td>
-        <td>audio sample</td>
-        <td>volume is almost zero, the mic is off</td>
-      </tr>
-      <tr>
-        <td>unmutedmic</td>
-        <td>microphone</td>
-        <td>micro is UNMUTED (passing from OFF to ON)</td>
-      </tr>
-      <tr>
-        <td>mutedmic</td>
-        <td>microphone</td>
-        <td>micro is MUTED (passing from ON to OFF)</td>
-      </tr>
-      <tr>
-        <td>prespeechstart</td>
-        <td>recording</td>
-        <td>speech recording start</td>
-      </tr>
-      <tr>
-        <td>speechstart</td>
-        <td>recording</td>
-        <td>speech initial chunk start</td>
-      </tr>
-      <tr>
-        <td>speechstop</td>
-        <td>recording</td>
-        <td>speech recording stop</td>
-      </tr>
-      <tr>
-        <td>speechabort</td>
-        <td>recording</td>
-        <td>speech recording aborted</td>
-      </tr>
-    </table>
-  </div>
+          if (event.results[len - 1].isFinal) {
+            // 如果是最终结果，只显示最后的转录内容
+            if (event.results[len - 1][0].transcript) {
+              const latestTranscript = event.results[len - 1][0].transcript;
+              transcriptElement.textContent = 'SpeechRecognition: ' + latestTranscript;
+              blurt('Final transcript: ' + latestTranscript); // 顯示最终結果
+            }
+          } else {
+            // 如果是中间结果，显示当前的转录内容
+            const data = event.results[len - 1][0].transcript;
+            transcriptElement.textContent = 'SpeechRecognition: ' + data;
+            blurt('Interim transcript: ' + data); // 顯示中間結果
+          }
+        };
 
+        recognition.onerror = event => {
+          blurt('Speech recognition error: ' + event.error); // 顯示錯誤信息
+        };
 
+        recognition.onstart = () => {
+          blurt('Speech recognition started'); // 顯示開始信息
+        };
+
+        recognition.onend = () => {
+          blurt('Speech recognition ended'); // 顯示結束信息
+        };
+
+        recognition.start();
+      } else {
+        blurt("Speech recognition not supported in this browser.");
+      }
+    });
+  </script>
   <script>/*
     The MIT License (MIT)
     
@@ -325,89 +258,15 @@
 
    const SAMPLE_POLLING_MSECS = 50
    
-   /*
-    
-   MAX_INTERSPEECH_SILENCE_MSECS
-   
-   elapsed time in milliseconds of silence (pause) between continuous blocks of signal.
-   This is to decide when to stop recording of a speech made by multiple audio chunks separated by pauses.
-   
-   That elapsed is used also to decide if a full speech is concluded, generating event 'stoprecording'.
-   
-         █  chunk 1                    █
-       █ █ █       █             █     █ █ chunk 2      █
-       █ █ █ █ █   █   █         █   █ █ █              █ chunk 3
-       █ █ █ █ █ █ █ █ █       █ █   █ █ █              █ █   █
-     █ █ █ █ █ █ █ █ █ █ █     █ █   █ █ █              █ █ █ █
-     █ █ █ █ █ █ █ █ █ █ █     █ █ █ █ █ █ █            █ █ █ █ █ █
-     █ █ █ █ █ █ █ █ █ █ █ █   █ █ █ █ █ █ █ █          █ █ █ █ █ █ █
-     █ █ █ █ █ █ █ █ █ █ █ █   █ █ █ █ █ █ █ █          █ █ █ █ █ █ █ █
-     █ █ █ █ █ █ █ █ █ █ █ █   █ █ █ █ █ █ █ █          █ █ █ █ █ █ █ █
-                            <->               <-------->               <-------->
-     ^                                         silence                   silence ^
-     |                                            ^                         ^    |
-     speechstart                                  |                         |    speechstop 
-                                                  |                         |
-                                    MAX_INTERSPEECH_SILENCE_MSECS    POST_SPEECH_MSECS
-   */                                                      
+                                              
    const MAX_INTERSPEECH_SILENCE_MSECS = 600
    const POST_SPEECH_MSECS = MAX_INTERSPEECH_SILENCE_MSECS
    
    
-   /*
-    
-   PRERECORDSTART_MSECS
-   
-   elapsed time in milliseconds before the speechstart event.
-   
-   
-                 █   chunk 1                     █
-               █ █ █       █             █     █ █              █
-               █ █ █ █ █   █   █         █   █ █ █ chunk 2      █
-               █ █ █ █ █ █ █ █ █       █ █   █ █ █              █ █   █ chunk 3
-             █ █ █ █ █ █ █ █ █ █ █     █ █   █ █ █              █ █ █ █
-             █ █ █ █ █ █ █ █ █ █ █     █ █ █ █ █ █ █            █ █ █ █ █ █
-             █ █ █ █ █ █ █ █ █ █ █ █   █ █ █ █ █ █ █ █          █ █ █ █ █ █ █
-             █ █ █ █ █ █ █ █ █ █ █ █   █ █ █ █ █ █ █ █          █ █ █ █ █ █ █ █
-             █ █ █ █ █ █ █ █ █ █ █ █   █ █ █ █ █ █ █ █          █ █ █ █ █ █ █ █
-   <-------->                       <->               <-------->               <--------> 
-   ^ silence ^                                                                           ^
-   |    ^    |                                                                           |
-   |    |    speechstart                                                        speechstop  
-   |    |
-   | PRERECORDSTART_MSECS             
-   |              
-   prerecordstart
-   
-   */                                                      
+                                                  
    const PRERECORDSTART_MSECS = 600
    
-   /*
-    
-   MIN_SIGNAL_DURATION 
-   
-   minimum elapsed time in millisecond for an audio signal block.
-   In terms of speech, it corresponds to a letter spelling ('b'), 
-   a number splelling ('two'), a 'yes'/'no' speech.
-   
-   It could be usefule to purge out background clicks/noises.
-   If a signal block chain sample length is less than that value, 
-   the event 'abortrecording' is generated.
-   
-         █                                
-       █ █ █       █ chunk 1     █      
-       █ █ █ █ █   █   █         █ chunk 2     █
-       █ █ █ █ █ █ █ █ █       █ █           █ █
-     █ █ █ █ █ █ █ █ █ █ █     █ █           █ █ chunk 3
-     █ █ █ █ █ █ █ █ █ █ █     █ █ █       █ █ █
-     █ █ █ █ █ █ █ █ █ █ █ █   █ █ █       █ █ █
-     █ █ █ █ █ █ █ █ █ █ █ █   █ █ █       █ █ █
-     █ █ █ █ █ █ █ █ █ █ █ █   █ █ █       █ █ █
-                               <--->       <--->   
-                                 ^
-                                 |
-                          MIN_SIGNAL_DURATION  
-   */
+ 
    const MIN_SIGNAL_DURATION = 50
    
    
@@ -1311,41 +1170,146 @@ function audioDetection(config) {
     
     </script>
 
+</head>
+<body>
+  <h1>WeBAD Demo</h1>
+  <h2>Web Browser Audio Detection/Speech Recording Events API</h2>
+  <div>
+    This sample shows how to implement an audio/speech detection in the browser, using a ScriptProcessor (Web Audio
+    API).<br>
+    Github repo: <a href="https://github.com/solyarisoftware/webad">https://github.com/solyarisoftware/webad</a><br>
+    <br>
+    To open/close the console: CTRL-SHIFT-J on Chrome, or CTRL-SHIFT-K on Firefox.
+    <h1 id="transcript">SpeechRecognition-1:</h1>
+    <div id="customAlert"></div>
+  </div>
+  <br>
+  <button id="start">START (required on Chrome)</button>
+  <button id="startconsoledebug">enable console logs</button>
+  <button id="stopconsoledebug">disable console logs</button>
+  <br>
+  <br>
+  <div>
+    REAL-TIME EVENTS/STATUS
+    <table>
+      <tr>
+        <th>Status</th>
+        <th>Value</th>
+      </tr>
+      <tr>
+        <td>microphone</td>
+        <td id="microphonestatuscell"><a id="microphonestatus"></a></td>
+      </tr>
+      <tr>
+        <td>audio</td>
+        <td id="audiostatuscell"><a id="audiostatus"></a></td>
+      </tr>
+      <tr>
+        <td>speech<br>recording</td>
+        <td id="recordingcell"><a id="recording"></a>
+          <p><audio id="audio" controls></audio></p>
+        </td>
+      </tr>
+    </table>
+  </div>
 
+  <br>
 
-  <script>
-    const transcriptElement = document.getElementById('transcript');
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  <div>
+    CONFIGURATION PARAMETERS
+    <table>
+      <tr>
+        <th>Parameter</th>
+        <th>Value</th>
+      </tr>
+      <tr>
+        <td>SAMPLE_POLLING_MSECS</td>
+        <td><a id="SAMPLE_POLLING_MSECS"></a></td>
+      </tr>
+      <tr>
+        <td>MAX_INTERSPEECH_SILENCE_MSECS</td>
+        <td><a id="MAX_INTERSPEECH_SILENCE_MSECS"></a></td>
+      </tr>
+      <tr>
+        <td>MIN_SIGNAL_DURATION</td>
+        <td><a id="MIN_SIGNAL_DURATION"></a></td>
+      </tr>
+      <tr>
+        <td>VOLUME_SIGNAL</td>
+        <td><a id="VOLUME_SIGNAL"></a></td>
+      </tr>
+      <tr>
+        <td>VOLUME_SILENCE</td>
+        <td><a id="VOLUME_SILENCE"></a></td>
+      </tr>
+      <tr>
+        <td>VOLUME_MUTE</td>
+        <td><a id="VOLUME_MUTE"></a></td>
+      </tr>
+      <tr>
+        <td>MIN_AVERAGE_SIGNAL_VOLUME</td>
+        <td><a id="MIN_AVERAGE_SIGNAL_VOLUME"></a></td>
+      </tr>
+    </table>
+  </div>
 
-    if (SpeechRecognition) {
-      const recognition = new SpeechRecognition();
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      recognition.lang = 'en-us';
+  <br>
 
-      let result = [];
-      recognition.onresult = event => {
-        console.log('Speech recognition results:', event.results);
-        const len = event.results.length;
-
-        if (event.results[len - 1].isFinal) {
-          // 如果是最终结果，只显示最后的转录内容
-          if (event.results[len - 1][0].transcript) {
-            const latestTranscript = event.results[len - 1][0].transcript;
-            transcriptElement.textContent = 'SpeechRecognition: ' + latestTranscript;
-          }
-        } else {
-          // 如果是中间结果，显示当前的转录内容
-          const data = event.results[len - 1][0].transcript;
-          transcriptElement.textContent = 'SpeechRecognition: ' + data;
-        }
-      };
-
-      recognition.start();
-    } else {
-      console.log("Speech recognition not supported in this browser.");
-    }
-  </script>
+  <div>
+    EVENTS EMITTED
+    <table>
+      <tr>
+        <th>Event name</th>
+        <th>Category</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td>signal</td>
+        <td>audio sample</td>
+        <td>volume is high, so probably user is speaking</td>
+      </tr>
+      <tr>
+        <td>silence</td>
+        <td>audio sample</td>
+        <td>volume is pretty low, the mic is on but there is not speech</td>
+      </tr>
+      <tr>
+        <td>mute</td>
+        <td>audio sample</td>
+        <td>volume is almost zero, the mic is off</td>
+      </tr>
+      <tr>
+        <td>unmutedmic</td>
+        <td>microphone</td>
+        <td>micro is UNMUTED (passing from OFF to ON)</td>
+      </tr>
+      <tr>
+        <td>mutedmic</td>
+        <td>microphone</td>
+        <td>micro is MUTED (passing from ON to OFF)</td>
+      </tr>
+      <tr>
+        <td>prespeechstart</td>
+        <td>recording</td>
+        <td>speech recording start</td>
+      </tr>
+      <tr>
+        <td>speechstart</td>
+        <td>recording</td>
+        <td>speech initial chunk start</td>
+      </tr>
+      <tr>
+        <td>speechstop</td>
+        <td>recording</td>
+        <td>speech recording stop</td>
+      </tr>
+      <tr>
+        <td>speechabort</td>
+        <td>recording</td>
+        <td>speech recording aborted</td>
+      </tr>
+    </table>
+  </div>
+  <div id="customAlert"></div>
 </body>
-
 </html>
