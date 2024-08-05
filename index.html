@@ -71,6 +71,8 @@
     }
     
   </style>
+
+
   <script>
     function blurt(message) {
       const alertBox = document.getElementById('customAlert');
@@ -131,6 +133,8 @@
       }
     });
   </script>
+
+
   <script>/*
     The MIT License (MIT)
     
@@ -230,7 +234,6 @@
     </script>
 
 
-
   <script>/**
     * audioDetectionConfig.js
     *
@@ -317,7 +320,6 @@
    }
    
    </script>
-
 
 
   <script>/* eslint-env browser */
@@ -674,7 +676,6 @@ function audioDetection(config) {
 </script>
 
 
-
   <script>
     var mediaStreamSource = null
     
@@ -696,7 +697,6 @@ function audioDetection(config) {
     }
     
     </script>
-
 
 
   <script>/* eslint-env browser */
@@ -821,7 +821,6 @@ function audioDetection(config) {
     </script>
 
 
-
   <script>/* eslint-env browser */
 
     const dB = (signal) => - Math.round( 20 * Math.log10( 1 / signal ) ) 
@@ -869,6 +868,7 @@ function audioDetection(config) {
     
       if (debuglog)
         console.log(`signal  ${timestamp} ${items} ${volume} ${dBV} ${line}`)
+
     
       document.querySelector('#audiostatuscell').style.background = 'green'
       document.querySelector('#audiostatuscell').style.color = 'black'
@@ -893,6 +893,7 @@ function audioDetection(config) {
     
       if (debuglog)
         console.log(`silence ${timestamp} ${items} ${volume} ${dBV}`)
+
     
       document.querySelector('#audiostatuscell').style.background = 'black'
       document.querySelector('#audiostatuscell').style.color = 'white'
@@ -977,8 +978,17 @@ function audioDetection(config) {
         console.log(`Average Signal level     : ${averageSignalLevel}`)
         console.log(`Average Signal dB        : ${dB(averageSignalLevel)}`)
         console.log(' ')
+        blurt('%cSPEECH STOP', 'color:lime')
+        blurt(`Total Duration in msecs  : ${duration}`)
+        blurt(`Signal Duration in msecs : ${duration - MAX_INTERSPEECH_SILENCE_MSECS }`)
+        blurt(`Average Signal level     : ${averageSignalLevel}`)
+        blurt(`Average Signal dB        : ${dB(averageSignalLevel)}`)
+        blurt(' ')
       // }  
-    
+
+      document.querySelector('#Signal_level').textContent = 'Average Signal level:' + averageSignalLevel
+      document.querySelector('#Signal_dB').textContent = 'Average Signal dB:'+ dB(averageSignalLevel)
+      document.querySelector('#recordingcell').style.background = 'black'   
       document.querySelector('#recordingcell').style.color = 'white'
       document.querySelector('#recordingcell').style.background = 'black'
       document.querySelector('#recording').style.color = 'white'
@@ -1053,7 +1063,6 @@ function audioDetection(config) {
     showConfiguration()
     
     </script>
-  
   
   
   <script>/* eslint-env browser */
@@ -1172,15 +1181,15 @@ function audioDetection(config) {
 
 </head>
 <body>
-  <h1>WeBAD Demo</h1>
+  <h1>MINI RC CONTROL</h1>
   <h2>Web Browser Audio Detection/Speech Recording Events API</h2>
   <div>
     This sample shows how to implement an audio/speech detection in the browser, using a ScriptProcessor (Web Audio
     API).<br>
-    Github repo: <a href="https://github.com/solyarisoftware/webad">https://github.com/solyarisoftware/webad</a><br>
     <br>
-    To open/close the console: CTRL-SHIFT-J on Chrome, or CTRL-SHIFT-K on Firefox.
-    <h1 id="transcript">SpeechRecognition-1:</h1>
+    <h1 id="transcript">SpeechRecognition:</h1>
+    <h1 id="Signal_level">Average Signal level:</h1>
+    <h1 id="Signal_dB">Average Signal dB:</h1>
     <div id="customAlert"></div>
   </div>
   <br>
